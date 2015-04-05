@@ -14,7 +14,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public static final String COMMA_SEP     = ", ";
     public static final String SQL_CREATE_TABLE_MATCHES =
             "CREATE TABLE " + TableMatches.TABLE_NAME + " (" +
-            TableMatches.COL_MATCH_ID + " INTEGER PRIMARY KEY," +
+            TableMatches.COL_MATCH_ID + " BIGINT(11) PRIMARY KEY," +
             TableMatches.COL_PLAYER1 + " BIGINT(11), " +
             TableMatches.COL_PLAYER2 + " BIGINT(11), " +
             TableMatches.COL_PLAYER3 + " BIGINT(11), " +
@@ -39,29 +39,41 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             TableMatches.COL_GAME_MODE + " TINYINT(2) )" ;
 
     public static final String SQL_CREATE_TABLE_MATCHPLAYERS =
-            "CREATE TABLE " + TableMatchPlayers.TABLE_NAME + " (" +
-            TableMatchPlayers.COL_MATCH_ID + " INT, " +
-            TableMatchPlayers.COL_ACCOUNT_ID + " BIGINT(11), " +
-            TableMatchPlayers.COL_PLAYER_SLOT + " MEDIUMINT, " +
-            TableMatchPlayers.COL_HERO_ID + " SMALLINT, " +
-            TableMatchPlayers.COL_ITEMS + " VARCHAR(23), " +
-            TableMatchPlayers.COL_KILLS + " TINYINT, " +
-            TableMatchPlayers.COL_DEATHS + " TINYINT, " +
-            TableMatchPlayers.COL_ASSISTS + " TINYINT, " +
-            TableMatchPlayers.COL_GOLD + " MEDIUMINT, " +
-            TableMatchPlayers.COL_LAST_HITS + " SMALLINT, " +
-            TableMatchPlayers.COL_DENIES + " SMALLINT, " +
-            TableMatchPlayers.COL_GPM + " SMALLINT, " +
-            TableMatchPlayers.COL_XPM + " SMALLINT, " +
-            TableMatchPlayers.COL_GOLD_SPENT + " MEDIUMINT, " +
-            TableMatchPlayers.COL_HERO_DMG + " MEDIUMINT, " +
-            TableMatchPlayers.COL_TOWER_DMG  + " MEDIUMINT, " +
-            TableMatchPlayers.COL_HERO_HEAL + " MEDIUMINT, " +
-            TableMatchPlayers.COL_LEVEL + " TINYINT(2), " +
-            TableMatchPlayers.COL_UPGRADES + " TEXT )";
+            "CREATE TABLE " + TablePlayers.TABLE_NAME + " (" +
+            TablePlayers.COL_MATCH_ID + " BIGINT(11), " +
+            TablePlayers.COL_ACCOUNT_ID + " BIGINT(11), " +
+            TablePlayers.COL_PLAYER_SLOT + " MEDIUMINT, " +
+            TablePlayers.COL_HERO_ID + " SMALLINT, " +
+            TablePlayers.COL_ITEMS + " VARCHAR(23), " +
+            TablePlayers.COL_KILLS + " TINYINT, " +
+            TablePlayers.COL_DEATHS + " TINYINT, " +
+            TablePlayers.COL_ASSISTS + " TINYINT, " +
+            TablePlayers.COL_GOLD + " MEDIUMINT, " +
+            TablePlayers.COL_LAST_HITS + " SMALLINT, " +
+            TablePlayers.COL_DENIES + " SMALLINT, " +
+            TablePlayers.COL_GPM + " SMALLINT, " +
+            TablePlayers.COL_XPM + " SMALLINT, " +
+            TablePlayers.COL_GOLD_SPENT + " MEDIUMINT, " +
+            TablePlayers.COL_HERO_DMG + " MEDIUMINT, " +
+            TablePlayers.COL_TOWER_DMG  + " MEDIUMINT, " +
+            TablePlayers.COL_HERO_HEAL + " MEDIUMINT, " +
+            TablePlayers.COL_LEVEL + " TINYINT(2), " +
+            TablePlayers.COL_UPGRADES + " TEXT, " +
+            "PRIMARY KEY (match_id, account_id) )";
+
+    public static final String SQL_CREATE_TABLE_ABILITYUPGRADES =
+            "CREATE TABLE " + TablePlayers.TABLE_NAME + " (" +
+                    TableAbilityUpgrades.COL_MATCH_ID + " INT, " +
+                    TableAbilityUpgrades.COL_ACCOUNT_ID + " BIGINT(11), " +
+                    TableAbilityUpgrades.COL_ABILITY + " SMALLINT, " +
+                    TableAbilityUpgrades.COL_TIME + " SMALLINT, " +
+                    TableAbilityUpgrades.COL_LEVEL + " TINYINT," +
+                    "PRIMARY KEY (match_id, account_id) )";
 
     private static final String SQL_DELETE =
-            "DROP TABLE IF EXISTS " + TableMatches.TABLE_NAME + ", " + TableMatchPlayers.TABLE_NAME;
+            "DROP TABLE IF EXISTS " + TableMatches.TABLE_NAME + ", " +
+                                      TablePlayers.TABLE_NAME + ", " +
+                                      TableAbilityUpgrades.TABLE_NAME;
 
 
     public DatabaseHandler(Context context) {
@@ -72,6 +84,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(SQL_CREATE_TABLE_MATCHES);
         db.execSQL(SQL_CREATE_TABLE_MATCHPLAYERS);
+        db.execSQL(SQL_CREATE_TABLE_ABILITYUPGRADES);
     }
 
     @Override
@@ -114,7 +127,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         public static final String COL_GAME_MODE        = "game_mode";
     }
 
-    public static abstract class TableMatchPlayers {
+    public static abstract class TablePlayers {
         public static final String TABLE_NAME = "match_players";
 
         public static final String COL_MATCH_ID    = "match_id";
@@ -138,4 +151,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         public static final String COL_UPGRADES    = "upgrades";
     }
 
+    public static abstract class TableAbilityUpgrades {
+        public static final String TABLE_NAME = "abilityUpgrades";
+
+        public static final String COL_MATCH_ID   = "match_id";
+        public static final String COL_ACCOUNT_ID = "account_id";
+        public static final String COL_ABILITY    = "ability";
+        public static final String COL_TIME       = "time";
+        public static final String COL_LEVEL      = "level";
+    }
 }

@@ -27,12 +27,19 @@ public class Match {
     private int human_players;
     private GameMode game_mode;
 
+    public Match() {
+        radiant = new Player[] {new Player(), new Player(), new Player(), new Player(), new Player() };
+        dire    = new Player[] {new Player(), new Player(), new Player(), new Player(), new Player() };
+    }
+
     public Player[] getRadiant() {
         return radiant;
     }
 
     public void setRadiant(Player[] radiant) {
-        this.radiant = radiant;
+        for (int i = 0; i < radiant.length; i++) {
+            this.radiant[i] = radiant[i];
+        }
     }
 
     public Player[] getDire() {
@@ -40,7 +47,9 @@ public class Match {
     }
 
     public void setDire(Player[] dire) {
-        this.dire = dire;
+        for (int i = 0; i < dire.length; i++) {
+            this.dire[i] = dire[i];
+        }
     }
 
     public boolean isRadiant_win() {

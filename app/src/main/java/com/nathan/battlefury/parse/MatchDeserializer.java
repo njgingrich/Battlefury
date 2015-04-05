@@ -78,10 +78,8 @@ public class MatchDeserializer implements JsonDeserializer {
                     dire.add(p);
                 }
             }
-            Player[] radiantTeam = new Player[5];
-            Player[] direTeam    = new Player[5];
-            match.setRadiant(radiant.toArray(radiantTeam));
-            match.setDire(dire.toArray(direTeam));
+            match.setRadiant(radiant.toArray(new Player[radiant.size()]));
+            match.setDire(dire.toArray(new Player[dire.size()]));
 
             match.setRadiant_win(obj.get("radiant_win").getAsBoolean());
             match.setDuration(obj.get("duration").getAsInt());

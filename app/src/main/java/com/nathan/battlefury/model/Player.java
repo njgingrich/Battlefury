@@ -6,7 +6,7 @@ package com.nathan.battlefury.model;
  * Created by nathan on 3/28/15.
  */
 public class Player {
-    private int account_id;
+    private long account_id;
     private int player_slot;
     private int hero_id;
     private int[] items;
@@ -29,11 +29,15 @@ public class Player {
     private int level;
     private AbilityUpgrade[] upgrades;
 
-    public int getAccount_id() {
+    public Player() {
+        account_id = -1;
+    }
+
+    public long getAccount_id() {
         return account_id;
     }
 
-    public void setAccount_id(int account_id) {
+    public void setAccount_id(long account_id) {
         this.account_id = account_id;
     }
 
@@ -55,6 +59,23 @@ public class Player {
 
     public int[] getItems() {
         return items;
+    }
+
+    public String getItemsCSV() {
+        StringBuffer buffer = new StringBuffer();
+        for (int item : items) {
+            buffer.append(item);
+            buffer.append(",");
+        }
+        buffer.substring(0, buffer.length() + 1);
+        return buffer.toString();
+    }
+
+    public void setItems(String items) {
+        String[] itemArray = items.split(",");
+        for (int i = 0; i < itemArray.length; i++) {
+            this.items[i] = Integer.parseInt(itemArray[i]);
+        }
     }
 
     public void setItems(int[] items) {
@@ -169,7 +190,19 @@ public class Player {
         return upgrades;
     }
 
+    public String getUpgradesCSV() {
+        StringBuffer buffer = new StringBuffer();
+        for (AbilityUpgrade upgrade : upgrades) {
+            buffer.append(upgrade.toString());
+        }
+        return buffer.toString();
+    }
+
     public void setUpgrades(AbilityUpgrade[] upgrades) {
         this.upgrades = upgrades;
+    }
+
+    public String toString() {
+        return "" + account_id;
     }
 }
