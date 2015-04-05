@@ -22,7 +22,6 @@ public enum GameMode {
     CAPTAINS_DRAFT("Captains Draft");
 
     private String name;
-
     private GameMode(String str) {
         name = str;
     }

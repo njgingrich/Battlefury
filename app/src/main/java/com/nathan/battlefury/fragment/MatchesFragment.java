@@ -3,17 +3,26 @@ package com.nathan.battlefury.fragment;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.nathan.battlefury.R;
+import com.nathan.battlefury.model.Match;
+import com.nathan.battlefury.parse.RestClient;
+
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link MatchesFragment.OnFragmentInteractionListener} interface
+ * {@link OnFragmentInteractionListener} interface
  * to handle interaction events.
  * Use the {@link MatchesFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -56,10 +65,7 @@ public class MatchesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+
     }
 
     @Override
@@ -74,6 +80,29 @@ public class MatchesFragment extends Fragment {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
         }
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        RestClient.get().getMatch("F4EAD5E4809D51CCD6CD240F3A98309E", 1357559513, new Callback<Match>() {
+            @Override
+            public void success(Match match, Response response) {
+                // success!
+                Log.i("Battlefury", "Match added " + match.getMatch_id());
+                TextView tv = (TextView) getView().findViewById(R.id.textView2);
+                tv.setText("Match added " + match.getMatch_id());
+
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                TextView tv = (TextView) getView().findViewById(R.id.textView2);
+                tv.setText("error");
+                error.printStackTrace();
+            }
+        });
     }
 
     @Override

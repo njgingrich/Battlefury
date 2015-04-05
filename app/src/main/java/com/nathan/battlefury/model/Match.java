@@ -1,5 +1,7 @@
 package com.nathan.battlefury.model;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Represent a completed match for a user.
  * <p/>
@@ -11,8 +13,8 @@ public class Match {
     private boolean radiant_win;
 
     private int duration;
-    private int start_time; // unix timestamp
-    private int match_id;
+    private long start_time; // unix timestamp
+    private long match_id;
 
     private int tower_status_radiant;
     private int tower_status_dire;
@@ -57,19 +59,19 @@ public class Match {
         this.duration = duration;
     }
 
-    public int getStart_time() {
+    public long getStart_time() {
         return start_time;
     }
 
-    public void setStart_time(int start_time) {
+    public void setStart_time(long start_time) {
         this.start_time = start_time;
     }
 
-    public int getMatch_id() {
+    public long getMatch_id() {
         return match_id;
     }
 
-    public void setMatch_id(int match_id) {
+    public void setMatch_id(long match_id) {
         this.match_id = match_id;
     }
 

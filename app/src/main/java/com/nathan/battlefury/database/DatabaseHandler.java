@@ -12,7 +12,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "matches.db";
 
     public static final String COMMA_SEP     = ", ";
-    public static final String SQL_CREATE_DB =
+    public static final String SQL_CREATE_TABLE_MATCHES =
             "CREATE TABLE " + TableMatches.TABLE_NAME + " (" +
             TableMatches.COL_MATCH_ID + " INTEGER PRIMARY KEY," +
             TableMatches.COL_PLAYER1 + " BIGINT(11), " +
@@ -36,8 +36,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             TableMatches.COL_FIRST_BLOOD_TIME + " BIGINT, " +
             TableMatches.COL_LOBBY_TYPE + " SMALLINT, " +
             TableMatches.COL_HUMAN_PLAYERS + " TINYINT(2), " +
-            TableMatches.COL_GAME_MODE + " TINYINT(2) );" +
-                    "" +
+            TableMatches.COL_GAME_MODE + " TINYINT(2) )" ;
+
+    public static final String SQL_CREATE_TABLE_MATCHPLAYERS =
             "CREATE TABLE " + TableMatchPlayers.TABLE_NAME + " (" +
             TableMatchPlayers.COL_MATCH_ID + " INT, " +
             TableMatchPlayers.COL_ACCOUNT_ID + " BIGINT(11), " +
@@ -59,6 +60,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             TableMatchPlayers.COL_LEVEL + " TINYINT(2), " +
             TableMatchPlayers.COL_UPGRADES + " TEXT )";
 
+    private static final String SQL_DELETE =
+            "DROP TABLE IF EXISTS " + TableMatches.TABLE_NAME + ", " + TableMatchPlayers.TABLE_NAME;
+
 
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -66,12 +70,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-
+        db.execSQL(SQL_CREATE_TABLE_MATCHES);
+        db.execSQL(SQL_CREATE_TABLE_MATCHPLAYERS);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL(SQL_DELETE);
+        onCreate(db);
+    }
 
+    @Override
+    public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        onUpgrade(db, oldVersion, newVersion);
     }
 
     public static abstract class TableMatches {
@@ -126,4 +137,5 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         public static final String COL_LEVEL       = "level";
         public static final String COL_UPGRADES    = "upgrades";
     }
+
 }
