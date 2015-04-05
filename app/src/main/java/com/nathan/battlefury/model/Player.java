@@ -31,6 +31,7 @@ public class Player {
 
     public Player() {
         account_id = -1;
+        items = new int[6];
     }
 
     public long getAccount_id() {
@@ -67,7 +68,7 @@ public class Player {
             buffer.append(item);
             buffer.append(",");
         }
-        buffer.substring(0, buffer.length() + 1);
+        buffer.setLength(buffer.length() - 1);
         return buffer.toString();
     }
 

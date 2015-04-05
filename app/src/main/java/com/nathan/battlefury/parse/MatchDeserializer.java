@@ -1,5 +1,6 @@
 package com.nathan.battlefury.parse;
 
+import android.content.Context;
 import android.util.Log;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
@@ -7,7 +8,9 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.nathan.battlefury.database.DBObject;
 import com.nathan.battlefury.model.AbilityUpgrade;
+import com.nathan.battlefury.model.Constants;
 import com.nathan.battlefury.model.GameMode;
 import com.nathan.battlefury.model.Match;
 import com.nathan.battlefury.model.Player;
@@ -19,6 +22,7 @@ import java.util.ArrayList;
  * Created by nathan on 3/31/15.
  */
 public class MatchDeserializer implements JsonDeserializer {
+    private Context context;
     @Override
     public Object deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         Match match = new Match();
@@ -59,12 +63,17 @@ public class MatchDeserializer implements JsonDeserializer {
                 p.setLevel(player.get("level").getAsInt());
 
                 JsonArray abilityUpgradesArray = (JsonArray) player.get("ability_upgrades");
-                for (int j = 0; j < abilityUpgradesArray.size(); j++) {
-                    abilityUpgrades[j] = new AbilityUpgrade();
-                    JsonObject upgrade = (JsonObject) abilityUpgradesArray.get(j);
-                    abilityUpgrades[j].ability = upgrade.get("ability").getAsInt();
-                    abilityUpgrades[j].time = upgrade.get("time").getAsInt();
-                    abilityUpgrades[j].level = upgrade.get("level").getAsInt();
+                int index;
+                for (index = 0; index < abilityUpgradesArray.size()-1; index++) {
+                    abilityUpgrades[index] = new AbilityUpgrade();
+                    JsonObject upgrade = (JsonObject) abilityUpgradesArray.get(index);
+                    abilityUpgrades[index].ability = upgrade.get("ability").getAsInt();
+                    abilityUpgrades[index].time = upgrade.get("time").getAsInt();
+                    abilityUpgrades[index].level = upgrade.get("level").getAsInt();
+                }
+                while (index < Constants.MAX_LEVEL) {
+                    abilityUpgrades[index] = new AbilityUpgrade();
+                    index++;
                 }
                 p.setUpgrades(abilityUpgrades);
                 players.add(p);

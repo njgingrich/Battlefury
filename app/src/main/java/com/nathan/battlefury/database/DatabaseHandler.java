@@ -62,7 +62,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             "PRIMARY KEY (match_id, account_id) )";
 
     public static final String SQL_CREATE_TABLE_ABILITYUPGRADES =
-            "CREATE TABLE " + TablePlayers.TABLE_NAME + " (" +
+            "CREATE TABLE " + TableAbilityUpgrades.TABLE_NAME + " (" +
                     TableAbilityUpgrades.COL_MATCH_ID + " INT, " +
                     TableAbilityUpgrades.COL_ACCOUNT_ID + " BIGINT(11), " +
                     TableAbilityUpgrades.COL_ABILITY + " SMALLINT, " +
@@ -131,7 +131,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         public static final String TABLE_NAME = "match_players";
 
         public static final String COL_MATCH_ID    = "match_id";
-        public static final String COL_ACCOUNT_ID  = "acount_id";
+        public static final String COL_ACCOUNT_ID  = "account_id";
         public static final String COL_PLAYER_SLOT = "player_slot";
         public static final String COL_HERO_ID     = "hero_id";
         public static final String COL_ITEMS       = "items";

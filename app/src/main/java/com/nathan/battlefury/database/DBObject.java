@@ -3,10 +3,13 @@ package com.nathan.battlefury.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.util.Log;
 
 import com.nathan.battlefury.model.AbilityUpgrade;
+import com.nathan.battlefury.model.Constants;
 import com.nathan.battlefury.model.GameMode;
 import com.nathan.battlefury.model.Match;
 import com.nathan.battlefury.model.Player;
@@ -98,6 +101,7 @@ public class DBObject {
         values.put(DatabaseHandler.TablePlayers.COL_HERO_HEAL, hero_healing);
         values.put(DatabaseHandler.TablePlayers.COL_LEVEL, level);
 
+        Log.i("Database", "Inserting player " + account_id + " for matchID " + match_id);
         database.insert(DatabaseHandler.TablePlayers.TABLE_NAME, null, values);
 
         // Now insert the upgrades for the player
@@ -180,6 +184,54 @@ public class DBObject {
         values.put(DatabaseHandler.TableMatches.COL_LOBBY_TYPE, lobby_type);
         values.put(DatabaseHandler.TableMatches.COL_HUMAN_PLAYERS, human_players);
         values.put(DatabaseHandler.TableMatches.COL_GAME_MODE, game_mode.ordinal());
+        Log.i("Database", "Inserted match " + match_id);
+        return match;
+    }
+
+    public Match insertMatch(Match match) {
+    for (Player p : match.getRadiant()) {
+            insertPlayer(match.getMatch_id(), p.getAccount_id(), p.getPlayer_slot(),
+                    p.getHero_id(), p.getItemsCSV(), p.getKills(), p.getDeaths(),
+                    p.getAssists(), p.getGold(), p.getLast_hits(), p.getDenies(),
+                    p.getGpm(), p.getXpm(), p.getGold_spent(), p.getHero_damage(),
+                    p.getTower_damage(), p.getHero_healing(), p.getLevel(),
+                    p.getUpgrades());
+        }
+        for (Player p : match.getDire()) {
+            insertPlayer(match.getMatch_id(), p.getAccount_id(), p.getPlayer_slot(),
+                    p.getHero_id(), p.getItemsCSV(), p.getKills(), p.getDeaths(),
+                    p.getAssists(), p.getGold(), p.getLast_hits(), p.getDenies(),
+                    p.getGpm(), p.getXpm(), p.getGold_spent(), p.getHero_damage(),
+                    p.getTower_damage(), p.getHero_healing(), p.getLevel(),
+                    p.getUpgrades());
+        }
+        Player[] radiant = match.getRadiant();
+        Player[] dire = match.getDire();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseHandler.TableMatches.COL_MATCH_ID, match.getMatch_id());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER1, radiant[1].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER2, radiant[2].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER3, radiant[3].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER4, radiant[4].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER5, radiant[5].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER6, dire[1].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER7, dire[2].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER8, dire[3].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER9, dire[4].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER10, dire[5].toString());
+        values.put(DatabaseHandler.TableMatches.COL_RADIANT_WIN, match.isRadiant_win());
+        values.put(DatabaseHandler.TableMatches.COL_DURATION, match.getDuration());
+        values.put(DatabaseHandler.TableMatches.COL_START_TIME, match.getStart_time());
+        values.put(DatabaseHandler.TableMatches.COL_TOWERS_RADIANT, match.getTower_status_radiant());
+        values.put(DatabaseHandler.TableMatches.COL_TOWERS_DIRE, match.getTower_status_dire());
+        values.put(DatabaseHandler.TableMatches.COL_BARRACKS_RADIANT, match.getBarracks_status_radiant());
+        values.put(DatabaseHandler.TableMatches.COL_BARRACKS_DIRE, match.getBarracks_status_dire());
+        values.put(DatabaseHandler.TableMatches.COL_CLUSTER, match.getCluster());
+        values.put(DatabaseHandler.TableMatches.COL_FIRST_BLOOD_TIME, match.getFirst_blood_time());
+        values.put(DatabaseHandler.TableMatches.COL_LOBBY_TYPE, match.getLobby_type());
+        values.put(DatabaseHandler.TableMatches.COL_HUMAN_PLAYERS, match.getHuman_players());
+        values.put(DatabaseHandler.TableMatches.COL_GAME_MODE, match.getGame_mode().ordinal());
+        Log.i("Database", "Inserted match " + match.getMatch_id());
         return match;
     }
 
@@ -250,7 +302,7 @@ public class DBObject {
             i++;
             abilityCursor.moveToNext();
         }
-        while (i < 25) {
+        while (i < Constants.MAX_LEVEL) {
             upgrades[i] = new AbilityUpgrade();
             i++;
         }

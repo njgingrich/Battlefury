@@ -1,6 +1,7 @@
 package com.nathan.battlefury.fragment;
 
 import android.app.Activity;
+import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,13 +10,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.nathan.battlefury.R;
 import com.nathan.battlefury.database.DBObject;
 import com.nathan.battlefury.model.Constants;
 import com.nathan.battlefury.model.Match;
+import com.nathan.battlefury.model.Player;
 import com.nathan.battlefury.parse.RestClient;
+
+import java.util.List;
 
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -38,6 +43,8 @@ public class MatchesFragment extends ListFragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    DBObject datasource;
 
     private OnFragmentInteractionListener mListener;
 
@@ -66,8 +73,30 @@ public class MatchesFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        DBObject datasource = new DBObject(getActivity());
+        datasource = new DBObject(getActivity().getApplicationContext());
+
+        RestClient.get().getMatch(Constants.STEAM_KEY, 1357559513, new Callback<Match>() {
+            @Override
+            public void success(Match match, Response response) {
+                // success!
+                Log.i("Battlefury", "Match added " + match.getMatch_id());
+                datasource.open();
+                datasource.insertMatch(match);
+                datasource.close();
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                error.printStackTrace();
+            }
+        });
+
         datasource.open();
+        List<Match> matches = datasource.getAllMatches();
+        ArrayAdapter<Match> adapter = new ArrayAdapter<Match>(getActivity(),
+                android.R.layout.simple_list_item_1, matches);
+                setListAdapter(adapter);
+        setListAdapter(adapter);
     }
 
     @Override
@@ -87,24 +116,6 @@ public class MatchesFragment extends ListFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        RestClient.get().getMatch(Constants.STEAM_KEY, 1357559513, new Callback<Match>() {
-            @Override
-            public void success(Match match, Response response) {
-                // success!
-                Log.i("Battlefury", "Match added " + match.getMatch_id());
-                TextView tv = (TextView) getView().findViewById(R.id.textView2);
-                tv.setText("Match added " + match.getMatch_id());
-
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                TextView tv = (TextView) getView().findViewById(R.id.textView2);
-                tv.setText("error");
-                error.printStackTrace();
-            }
-        });
     }
 
     @Override
