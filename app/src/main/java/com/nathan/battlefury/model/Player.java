@@ -1,5 +1,7 @@
 package com.nathan.battlefury.model;
 
+import nl.qbusict.cupboard.annotation.Ignore;
+
 /**
  * Represent a player within a match.
  * <p/>
@@ -27,5 +29,6 @@ public class Player {
     public int tower_damage;
     public int hero_healing;
     public int level;
-    //public AbilityUpgrade[] upgrades;
+    @Ignore
+    public AbilityUpgrade[] upgrades;
 }

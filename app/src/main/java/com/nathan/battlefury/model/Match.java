@@ -23,7 +23,6 @@ public class Match {
 
     public int duration;
     public long start_time; // unix timestamp
-    public long match_id;
 
     public int tower_status_radiant;
     public int tower_status_dire;

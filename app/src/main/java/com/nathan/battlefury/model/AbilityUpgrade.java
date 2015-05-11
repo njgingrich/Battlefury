@@ -8,7 +8,7 @@ package com.nathan.battlefury.model;
 public class AbilityUpgrade {
     // What the fuck do I do here?
     // I hate myself so much.
-    public int _id; // slot_id|match_id
+    public long _id; // slot_id|match_id ex) 1281234567890
     public int ability;
     public int time;
     public int level;

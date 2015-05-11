@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
 import com.nathan.battlefury.R;
-import com.nathan.battlefury.database.DBObject;
+import com.nathan.battlefury.database.DBHelper;
 import com.nathan.battlefury.model.Constants;
 import com.nathan.battlefury.model.Match;
 import com.nathan.battlefury.parse.RestClient;
@@ -37,7 +37,7 @@ public class MatchesFragment extends ListFragment {
     private static final String ARG_PARAM2 = "param2";
     public static final String TAG = "matches_fragment";
 
-    private DBObject datasource;
+    private DBHelper datasource;
     private OnFragmentInteractionListener mListener;
 
     /**
@@ -65,16 +65,14 @@ public class MatchesFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        datasource = new DBObject(getActivity().getApplicationContext());
+        datasource = new DBHelper(getActivity().getApplicationContext());
 
         RestClient.get().getMatch(Constants.STEAM_KEY, 1357559513, new Callback<Match>() {
             @Override
             public void success(Match match, Response response) {
                 // success!
-                Log.i("Battlefury", "Match added " + match.getMatch_id());
-                datasource.open();
+                Log.i("Battlefury", "Match added " + match._id);
                 datasource.insertMatch(match);
-                datasource.close();
             }
 
             @Override
@@ -83,7 +81,6 @@ public class MatchesFragment extends ListFragment {
             }
         });
 
-        datasource.open();
         List<Match> matches = datasource.getAllMatches();
         Log.i("MatchesFrag", "added to list: " + matches.size());
         ArrayAdapter<Match> adapter = new ArrayAdapter<>(getActivity(),

@@ -8,10 +8,8 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.nathan.battlefury.database.DBObject;
 import com.nathan.battlefury.model.AbilityUpgrade;
 import com.nathan.battlefury.model.Constants;
-import com.nathan.battlefury.model.GameMode;
 import com.nathan.battlefury.model.Match;
 import com.nathan.battlefury.model.Player;
 
@@ -32,79 +30,100 @@ public class MatchDeserializer implements JsonDeserializer {
         if (obj.has("result")) {
             obj = (JsonObject) obj.get("result");
             JsonArray playerArray = (JsonArray) obj.get("players");
-            GameMode[] modes = GameMode.values();
+
+            match.radiant_win             = obj.get("radiant_win").getAsBoolean();
+            match.duration                = obj.get("duration").getAsInt();
+            match.start_time              = obj.get("start_time").getAsLong();
+            match._id                     = obj.get("match_id").getAsLong();
+            match.tower_status_radiant    = obj.get("tower_status_radiant").getAsInt();
+            match.tower_status_dire       = obj.get("tower_status_dire").getAsInt();
+            match.barracks_status_radiant = obj.get("barracks_status_radiant").getAsInt();
+            match.barracks_status_dire    = obj.get("barracks_status_dire").getAsInt();
+            match.cluster                 = obj.get("cluster").getAsInt();
+            match.first_blood_time        = obj.get("first_blood_time").getAsInt();
+            match.lobby_type              = obj.get("lobby_type").getAsInt();
+            match.human_players           = obj.get("human_players").getAsInt();
+            match.game_mode               = obj.get("game_mode").getAsInt();
 
             for (int i = 0; i < playerArray.size(); i++) {
-                int[] items = new int[6];
-                AbilityUpgrade[] abilityUpgrades = new AbilityUpgrade[25];
-                Player p = new Player();
-
-                JsonObject player = (JsonObject) playerArray.get(i);
-                Log.i("JSON SHIT", "player: " + player.toString());
-                p.setAccount_id(player.get("account_id").getAsInt());
-                p.setPlayer_slot(player.get("player_slot").getAsInt());
-                p.setHero_id(player.get("hero_id").getAsInt());
-                for (int j = 0; j < items.length; j++) {
-                    items[j] = player.get("item_" + j).getAsInt();
-                }
-                p.setItems(items);
-                p.setKills(player.get("kills").getAsInt());
-                p.setDeaths(player.get("deaths").getAsInt());
-                p.setAssists(player.get("assists").getAsInt());
-                p.setGold(player.get("gold").getAsInt());
-                p.setLast_hits(player.get("last_hits").getAsInt());
-                p.setDenies(player.get("denies").getAsInt());
-                p.setGpm(player.get("gold_per_min").getAsInt());
-                p.setXpm(player.get("xp_per_min").getAsInt());
-                p.setGold_spent(player.get("gold_spent").getAsInt());
-                p.setHero_damage(player.get("hero_damage").getAsInt());
-                p.setTower_damage(player.get("tower_damage").getAsInt());
-                p.setHero_healing(player.get("hero_healing").getAsInt());
-                p.setLevel(player.get("level").getAsInt());
-
-                JsonArray abilityUpgradesArray = (JsonArray) player.get("ability_upgrades");
-                int index;
-                for (index = 0; index < abilityUpgradesArray.size()-1; index++) {
-                    abilityUpgrades[index] = new AbilityUpgrade();
-                    JsonObject upgrade = (JsonObject) abilityUpgradesArray.get(index);
-                    abilityUpgrades[index].ability = upgrade.get("ability").getAsInt();
-                    abilityUpgrades[index].time = upgrade.get("time").getAsInt();
-                    abilityUpgrades[index].level = upgrade.get("level").getAsInt();
-                }
-                while (index < Constants.MAX_LEVEL) {
-                    abilityUpgrades[index] = new AbilityUpgrade();
-                    index++;
-                }
-                p.setUpgrades(abilityUpgrades);
+                Player p = getPlayer(playerArray, i, match._id);
                 players.add(p);
             }
-            ArrayList<Player> radiant = new ArrayList<>(5);
-            ArrayList<Player> dire    = new ArrayList<>(5);
             for (Player p : players) {
-                if (p.getPlayer_slot() < 128) {
-                    radiant.add(p);
-                } else {
-                    dire.add(p);
+                switch (p.player_slot) {
+                    case 0:   match.player1  = p._id;
+                    case 1:   match.player2  = p._id;
+                    case 2:   match.player3  = p._id;
+                    case 3:   match.player4  = p._id;
+                    case 4:   match.player5  = p._id;
+                    case 128: match.player6  = p._id;
+                    case 129: match.player7  = p._id;
+                    case 130: match.player8  = p._id;
+                    case 131: match.player9  = p._id;
+                    case 132: match.player10 = p._id;
                 }
             }
-            match.setRadiant(radiant.toArray(new Player[radiant.size()]));
-            match.setDire(dire.toArray(new Player[dire.size()]));
-
-            match.setRadiant_win(obj.get("radiant_win").getAsBoolean());
-            match.setDuration(obj.get("duration").getAsInt());
-            match.setStart_time(obj.get("start_time").getAsLong());
-            match.setMatch_id(obj.get("match_id").getAsLong());
-            match.setTower_status_radiant(obj.get("tower_status_radiant").getAsInt());
-            match.setTower_status_dire(obj.get("tower_status_dire").getAsInt());
-            match.setBarracks_status_radiant(obj.get("barracks_status_radiant").getAsInt());
-            match.setBarracks_status_dire(obj.get("barracks_status_dire").getAsInt());
-            match.setCluster(obj.get("cluster").getAsInt());
-            match.setFirst_blood_time(obj.get("first_blood_time").getAsInt());
-            match.setLobby_type(obj.get("lobby_type").getAsInt());
-            match.setHuman_players(obj.get("human_players").getAsInt());
-            match.setGame_mode( modes[obj.get("game_mode").getAsInt()] );
         }
 
         return match;
+    }
+
+    private Player getPlayer(JsonArray playerArray, int i, long match_id) {
+        int[] items = new int[6];
+        Player p = new Player();
+
+        JsonObject player = (JsonObject) playerArray.get(i);
+        Log.i("JSON SHIT", "player: " + player.toString());
+        p._id          = player.get("account_id").getAsInt();
+        p.player_slot  = player.get("player_slot").getAsInt();
+        p.hero_id      = player.get("hero_id").getAsInt();
+        for (int j = 0; j < items.length; j++) {
+            items[j] = player.get("item_" + j).getAsInt();
+        }
+        p.items        = setItems(items);
+        p.kills        = player.get("kills").getAsInt();
+        p.deaths       = player.get("deaths").getAsInt();
+        p.assists      = player.get("assists").getAsInt();
+        p.gold         = player.get("gold").getAsInt();
+        p.last_hits    = player.get("last_hits").getAsInt();
+        p.denies       = player.get("denies").getAsInt();
+        p.gpm          = player.get("gold_per_min").getAsInt();
+        p.xpm          = player.get("xp_per_min").getAsInt();
+        p.gold_spent   = player.get("gold_spent").getAsInt();
+        p.hero_damage  = player.get("hero_damage").getAsInt();
+        p.tower_damage = player.get("tower_damage").getAsInt();
+        p.hero_healing = player.get("hero_healing").getAsInt();
+        p.level        = player.get("level").getAsInt();
+        p.upgrades     = getAbilityUpgrades(p, (JsonArray) player.get("ability_upgrades"), match_id);
+        return p;
+    }
+
+    private AbilityUpgrade[] getAbilityUpgrades(Player p, JsonArray abilityUpgradesArray, long match_id) {
+        AbilityUpgrade[] abilityUpgrades = new AbilityUpgrade[25];
+        int index;
+        for (index = 0; index < abilityUpgradesArray.size()-1; index++) {
+            abilityUpgrades[index] = new AbilityUpgrade();
+            JsonObject upgrade = (JsonObject) abilityUpgradesArray.get(index);
+
+            abilityUpgrades[index]._id     = p.player_slot + match_id;
+            abilityUpgrades[index].ability = upgrade.get("ability").getAsInt();
+            abilityUpgrades[index].time    = upgrade.get("time").getAsInt();
+            abilityUpgrades[index].level   = upgrade.get("level").getAsInt();
+        }
+        while (index < Constants.MAX_LEVEL) {
+            abilityUpgrades[index] = new AbilityUpgrade();
+            index++;
+        }
+        return abilityUpgrades;
+    }
+
+    private String setItems(int[] items) {
+        StringBuilder sb = new StringBuilder();
+        for (int item : items) {
+            sb.append(item);
+            sb.append(",");
+        }
+        sb.deleteCharAt(sb.length()-1); // remove last comma
+        return sb.length() > 0 ? sb.substring(0, sb.length() - 1): "";
     }
 }
