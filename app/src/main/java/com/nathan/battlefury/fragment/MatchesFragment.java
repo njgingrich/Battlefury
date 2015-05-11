@@ -1,7 +1,6 @@
 package com.nathan.battlefury.fragment;
 
 import android.app.Activity;
-import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,13 +10,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.TextView;
 
 import com.nathan.battlefury.R;
 import com.nathan.battlefury.database.DBObject;
 import com.nathan.battlefury.model.Constants;
 import com.nathan.battlefury.model.Match;
-import com.nathan.battlefury.model.Player;
 import com.nathan.battlefury.parse.RestClient;
 
 import java.util.List;
@@ -40,12 +37,7 @@ public class MatchesFragment extends ListFragment {
     private static final String ARG_PARAM2 = "param2";
     public static final String TAG = "matches_fragment";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    DBObject datasource;
-
+    private DBObject datasource;
     private OnFragmentInteractionListener mListener;
 
     /**
@@ -93,7 +85,8 @@ public class MatchesFragment extends ListFragment {
 
         datasource.open();
         List<Match> matches = datasource.getAllMatches();
-        ArrayAdapter<Match> adapter = new ArrayAdapter<Match>(getActivity(),
+        Log.i("MatchesFrag", "added to list: " + matches.size());
+        ArrayAdapter<Match> adapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_list_item_1, matches);
                 setListAdapter(adapter);
         setListAdapter(adapter);

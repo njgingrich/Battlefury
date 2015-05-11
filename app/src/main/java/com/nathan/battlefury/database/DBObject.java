@@ -3,6 +3,7 @@ package com.nathan.battlefury.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
@@ -29,7 +30,9 @@ public class DBObject {
     }
 
     public void open() throws SQLiteException {
+        // For now, empty the table before a rewrite
         database = handler.getWritableDatabase();
+        handler.emptyTables(database);
     }
 
     public void close() {
@@ -37,7 +40,7 @@ public class DBObject {
     }
 
     public AbilityUpgrade insertAbilityUpgrade(long match_id, long account_id,
-                                               int ability, int time, int level) {
+                                               int ability, int time, int level) throws SQLException {
         AbilityUpgrade upgrade = new AbilityUpgrade();
         upgrade.ability = ability;
         upgrade.time = time;
@@ -50,7 +53,7 @@ public class DBObject {
         values.put(DatabaseHandler.TableAbilityUpgrades.COL_TIME, time);
         values.put(DatabaseHandler.TableAbilityUpgrades.COL_LEVEL, level);
 
-        database.insert(DatabaseHandler.TableAbilityUpgrades.TABLE_NAME, null, values);
+        database.insertOrThrow(DatabaseHandler.TableAbilityUpgrades.TABLE_NAME, null, values);
         return upgrade;
     }
 
@@ -102,13 +105,19 @@ public class DBObject {
         values.put(DatabaseHandler.TablePlayers.COL_LEVEL, level);
 
         Log.i("Database", "Inserting player " + account_id + " for matchID " + match_id);
-        database.insert(DatabaseHandler.TablePlayers.TABLE_NAME, null, values);
-
-        // Now insert the upgrades for the player
-        for (AbilityUpgrade upgrade : upgrades) {
-            insertAbilityUpgrade(match_id, account_id, upgrade.ability,
-                                 upgrade.time, upgrade.level);
+        int row = -1;
+        try {
+            database.insertOrThrow(DatabaseHandler.TablePlayers.TABLE_NAME, null, values);
+            // Now insert the upgrades for the player
+            for (AbilityUpgrade upgrade : upgrades) {
+                insertAbilityUpgrade(match_id, account_id, upgrade.ability,
+                        upgrade.time, upgrade.level);
+            }
+        } catch (SQLException e) {
+            Log.i("Database", "Error inserting player " + account_id + " in match " + match_id + ": " + e.getMessage());
         }
+
+
 
         return p;
     }
@@ -209,16 +218,16 @@ public class DBObject {
         Player[] dire = match.getDire();
         ContentValues values = new ContentValues();
         values.put(DatabaseHandler.TableMatches.COL_MATCH_ID, match.getMatch_id());
-        values.put(DatabaseHandler.TableMatches.COL_PLAYER1, radiant[1].toString());
-        values.put(DatabaseHandler.TableMatches.COL_PLAYER2, radiant[2].toString());
-        values.put(DatabaseHandler.TableMatches.COL_PLAYER3, radiant[3].toString());
-        values.put(DatabaseHandler.TableMatches.COL_PLAYER4, radiant[4].toString());
-        values.put(DatabaseHandler.TableMatches.COL_PLAYER5, radiant[5].toString());
-        values.put(DatabaseHandler.TableMatches.COL_PLAYER6, dire[1].toString());
-        values.put(DatabaseHandler.TableMatches.COL_PLAYER7, dire[2].toString());
-        values.put(DatabaseHandler.TableMatches.COL_PLAYER8, dire[3].toString());
-        values.put(DatabaseHandler.TableMatches.COL_PLAYER9, dire[4].toString());
-        values.put(DatabaseHandler.TableMatches.COL_PLAYER10, dire[5].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER1, radiant[0].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER2, radiant[1].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER3, radiant[2].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER4, radiant[3].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER5, radiant[4].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER6, dire[0].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER7, dire[1].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER8, dire[2].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER9, dire[3].toString());
+        values.put(DatabaseHandler.TableMatches.COL_PLAYER10, dire[4].toString());
         values.put(DatabaseHandler.TableMatches.COL_RADIANT_WIN, match.isRadiant_win());
         values.put(DatabaseHandler.TableMatches.COL_DURATION, match.getDuration());
         values.put(DatabaseHandler.TableMatches.COL_START_TIME, match.getStart_time());
@@ -231,7 +240,12 @@ public class DBObject {
         values.put(DatabaseHandler.TableMatches.COL_LOBBY_TYPE, match.getLobby_type());
         values.put(DatabaseHandler.TableMatches.COL_HUMAN_PLAYERS, match.getHuman_players());
         values.put(DatabaseHandler.TableMatches.COL_GAME_MODE, match.getGame_mode().ordinal());
-        Log.i("Database", "Inserted match " + match.getMatch_id());
+        try {
+            Log.i("Database", "Inserted match " + match.getMatch_id());
+            database.insertOrThrow(DatabaseHandler.TableMatches.TABLE_NAME, null, values);
+        } catch (SQLException e) {
+            Log.i("Database", "Error inserting match " + match.getMatch_id() + ": " + e.getMessage());
+        }
         return match;
     }
 
@@ -255,7 +269,11 @@ public class DBObject {
         List<Player> players = new ArrayList<>();
         long match_id = cursor.getLong(cursor.getColumnIndex("match_id"));
         Cursor playerCursor = database.query(DatabaseHandler.TablePlayers.TABLE_NAME,
-                                             new String[] { "account_id" },
+                                             new String[] {"account_id", "player_slot", "hero_id",
+                                                           "items", "kills", "deaths", "assists",
+                                                           "gold", "last_hits", "denies", "gpm",
+                                                           "xpm", "gold_spent", "hero_damage",
+                                                           "tower_damage", "hero_healing", "level"},
                                              DatabaseHandler.TablePlayers.COL_MATCH_ID + " = ?",
                                              new String[] { "" + match_id },
                                              null, null, null);
@@ -270,6 +288,7 @@ public class DBObject {
 
     private Player cursorToPlayer(Cursor cursor, long match_id) {
         Player player = new Player();
+        Log.i("JSON SHIT", cursor.getColumnName(0));
         player.setAccount_id(cursor.getLong(cursor.getColumnIndex("account_id")));
         player.setPlayer_slot(cursor.getInt(cursor.getColumnIndex("player_slot")));
         player.setHero_id(cursor.getInt(cursor.getColumnIndex("hero_id")));
@@ -289,8 +308,8 @@ public class DBObject {
         player.setLevel(cursor.getInt(cursor.getColumnIndex("level")));
         // Get abilities for that player + match
         AbilityUpgrade[] upgrades = new AbilityUpgrade[25];
-        Cursor abilityCursor = database.query(DatabaseHandler.TablePlayers.TABLE_NAME,
-                               null,
+        Cursor abilityCursor = database.query(DatabaseHandler.TableAbilityUpgrades.TABLE_NAME,
+                               new String[] { "ability", "time", "level" },
                                DatabaseHandler.TableAbilityUpgrades.COL_MATCH_ID + " = ? AND " +
                                DatabaseHandler.TableAbilityUpgrades.COL_ACCOUNT_ID + " = ?",
                                new String[] { "" + match_id, "" + player.getAccount_id() },
@@ -311,9 +330,9 @@ public class DBObject {
 
     private AbilityUpgrade cursorToUpgrade(Cursor cursor) {
         AbilityUpgrade upgrade = new AbilityUpgrade();
-        upgrade.ability = cursor.getInt(cursor.getInt(cursor.getColumnIndex("ability")));
-        upgrade.time    = cursor.getInt(cursor.getInt(cursor.getColumnIndex("time")));
-        upgrade.level   = cursor.getInt(cursor.getInt(cursor.getColumnIndex("level")));
+        upgrade.ability = cursor.getInt(cursor.getColumnIndex("ability"));
+        upgrade.time    = cursor.getInt(cursor.getColumnIndex("time"));
+        upgrade.level   = cursor.getInt(cursor.getColumnIndex("level"));
 
         return upgrade;
     }

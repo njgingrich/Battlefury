@@ -3,6 +3,7 @@ package com.nathan.battlefury.database;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 /**
  * Created by nathan on 3/29/15.
@@ -75,6 +76,10 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                                       TablePlayers.TABLE_NAME + ", " +
                                       TableAbilityUpgrades.TABLE_NAME;
 
+    private static final String SQL_CLEAR_TABLES =
+            "DELETE FROM " + TableMatches.TABLE_NAME + ";" +
+            "DELETE FROM " + TablePlayers.TABLE_NAME + ";" +
+            "DELETE FROM " + TableAbilityUpgrades.TABLE_NAME + ";";
 
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -96,6 +101,11 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);
+    }
+
+    public void emptyTables(SQLiteDatabase db) {
+        Log.i("Database", "Emptied all tables.");
+        db.execSQL(SQL_CLEAR_TABLES);
     }
 
     public static abstract class TableMatches {
