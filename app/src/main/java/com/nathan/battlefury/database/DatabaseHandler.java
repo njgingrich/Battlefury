@@ -5,13 +5,18 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.nathan.battlefury.model.AbilityUpgrade;
+import com.nathan.battlefury.model.Match;
+import com.nathan.battlefury.model.Player;
+
+import static nl.qbusict.cupboard.CupboardFactory.cupboard;
+
 /**
  * Created by nathan on 3/29/15.
  */
 public class DatabaseHandler extends SQLiteOpenHelper {
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "matches.db";
-
     public static final String COMMA_SEP     = ", ";
     public static final String SQL_CREATE_TABLE_MATCHES =
             "CREATE TABLE " + TableMatches.TABLE_NAME + " (" +
@@ -80,6 +85,13 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             "DELETE FROM " + TableMatches.TABLE_NAME + ";" +
             "DELETE FROM " + TablePlayers.TABLE_NAME + ";" +
             "DELETE FROM " + TableAbilityUpgrades.TABLE_NAME + ";";
+
+    static {
+        // register our models
+        cupboard().register(Player.class);
+        cupboard().register(Match.class);
+        cupboard().register(AbilityUpgrade.class);
+    }
 
     public DatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

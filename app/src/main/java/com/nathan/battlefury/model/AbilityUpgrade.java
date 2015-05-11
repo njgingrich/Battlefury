@@ -6,18 +6,10 @@ package com.nathan.battlefury.model;
  * Created by nathan on 3/28/15.
  */
 public class AbilityUpgrade {
+    // What the fuck do I do here?
+    // I hate myself so much.
+    public int _id; // slot_id|match_id
     public int ability;
     public int time;
     public int level;
-
-    public AbilityUpgrade() {
-        ability = -1;
-        time = -1;
-        level = -1;
-    }
-
-    @Override
-    public String toString() {
-        return "" + ability + "," + time + "," + level;
-    }
 }
