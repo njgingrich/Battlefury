@@ -4,19 +4,26 @@ import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 import com.nathan.battlefury.R;
 import com.nathan.battlefury.database.DBHelper;
 import com.nathan.battlefury.model.Constants;
 import com.nathan.battlefury.model.Match;
+import com.nathan.battlefury.model.MatchHistory;
 import com.nathan.battlefury.parse.RestClient;
+import com.nathan.battlefury.view.MatchRVAdapter;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import retrofit.Callback;
@@ -30,7 +37,7 @@ import retrofit.client.Response;
  * Use the {@link MatchesFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MatchesFragment extends ListFragment {
+public class MatchesFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -38,6 +45,7 @@ public class MatchesFragment extends ListFragment {
     public static final String TAG = "matches_fragment";
 
     private DBHelper datasource;
+
     private OnFragmentInteractionListener mListener;
 
     /**
@@ -65,35 +73,71 @@ public class MatchesFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        datasource = new DBHelper(getActivity().getApplicationContext());
+        /*
+        for (Long match_id : match_ids) {
+            RestClient.get().getMatch(Constants.STEAM_KEY, match_id, new Callback<Match>() {
+                @Override
+                public void success(Match match, Response response) {
+                    // success!
+                    Log.i("Battlefury", "Match added " + match._id);
+                    datasource.insertMatch(match);
+                }
 
-        RestClient.get().getMatch(Constants.STEAM_KEY, 1357559513, new Callback<Match>() {
-            @Override
-            public void success(Match match, Response response) {
-                // success!
-                Log.i("Battlefury", "Match added " + match._id);
-                datasource.insertMatch(match);
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                error.printStackTrace();
-            }
-        });
-
+                @Override
+                public void failure(RetrofitError error) {
+                    error.printStackTrace();
+                }
+            });
+        }
         List<Match> matches = datasource.getAllMatches();
         Log.i("MatchesFrag", "added to list: " + matches.size());
         ArrayAdapter<Match> adapter = new ArrayAdapter<>(getActivity(),
                 android.R.layout.simple_list_item_1, matches);
                 setListAdapter(adapter);
-        setListAdapter(adapter);
+        setListAdapter(adapter);*/
     }
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_matches, container, false);
+        datasource = new DBHelper(getActivity().getApplicationContext());
+        View rootView = inflater.inflate(R.layout.fragment_matches, container, false);
+
+        RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.match_frag_rv);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        final MatchRVAdapter adapter = new MatchRVAdapter();
+        recyclerView.setAdapter(adapter);
+        LinkedList<Long> match_list = new LinkedList<>();
+        match_list.add(100L);
+        match_list.add(200L);
+        match_list.add(300L);
+        match_list.add(400L);
+        adapter.addAll(match_list);
+
+        /*//TODO: This is a shit way of doing it (its just to get it to work)
+        //TODO: replace with checking for more matches from user + load old from DB
+        // Get all of the user's match IDs
+        RestClient.get().getMatchHistory(Constants.STEAM_KEY, 0L, new Callback<MatchHistory>() {
+            @Override
+            public void success(MatchHistory matchHistory, Response response) {
+                Log.i("GetMatchHistory", "Successfully found " + matchHistory.total_matches + " matches for player");
+                Log.i("GetMatchHistory", "matches size: " + matchHistory.matches.size());
+                adapter.addAll(matchHistory.matches);
+                Log.i("MatchesFrag", "adapter size: " + adapter.getItemCount());
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+
+            }
+        });
+        Log.i("MatchesFrag", "adapter size after: " + adapter.getItemCount());*/
+
+        return rootView;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -106,6 +150,7 @@ public class MatchesFragment extends ListFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
     }
 
     @Override

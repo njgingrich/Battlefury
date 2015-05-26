@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nathan.battlefury.model.Constants;
 import com.nathan.battlefury.model.Match;
+import com.nathan.battlefury.model.MatchHistory;
 import com.squareup.okhttp.OkHttpClient;
 
 import retrofit.RestAdapter;
@@ -32,6 +33,7 @@ public class RestClient {
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .setDateFormat("yyyy-MM-dd")
                 .registerTypeAdapter(Match.class, new MatchDeserializer())
+                .registerTypeAdapter(MatchHistory.class, new MatchHistoryDeserializer())
                 .create();
 
         RestAdapter restAdapter = new RestAdapter.Builder()

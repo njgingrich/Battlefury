@@ -68,6 +68,7 @@ public class MatchDeserializer implements JsonDeserializer {
         return match;
     }
 
+    // BAD
     private Player getPlayer(JsonArray playerArray, int i, long match_id) {
         int[] items = new int[6];
         Player p = new Player();
