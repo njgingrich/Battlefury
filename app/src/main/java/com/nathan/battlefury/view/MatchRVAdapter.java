@@ -2,6 +2,7 @@ package com.nathan.battlefury.view;
 
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +25,7 @@ public class MatchRVAdapter extends RecyclerView.Adapter<MatchRVAdapter.MatchVie
         public MatchViewHolder(View v) {
             super(v);
             cv       = (CardView)v.findViewById(R.id.match_card);
-            match_id = (TextView)v.findViewById(R.id.match_id);
+            match_id = (TextView)v.findViewById(R.id.txt_match_id);
         }
     }
 

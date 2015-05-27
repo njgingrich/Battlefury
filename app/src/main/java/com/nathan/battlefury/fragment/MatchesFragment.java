@@ -114,11 +114,9 @@ public class MatchesFragment extends Fragment {
         LinkedList<Long> match_list = new LinkedList<>();
         match_list.add(100L);
         match_list.add(200L);
-        match_list.add(300L);
-        match_list.add(400L);
         adapter.addAll(match_list);
 
-        /*//TODO: This is a shit way of doing it (its just to get it to work)
+        //TODO: This is a shit way of doing it (its just to get it to work)
         //TODO: replace with checking for more matches from user + load old from DB
         // Get all of the user's match IDs
         RestClient.get().getMatchHistory(Constants.STEAM_KEY, 0L, new Callback<MatchHistory>() {
@@ -135,7 +133,7 @@ public class MatchesFragment extends Fragment {
 
             }
         });
-        Log.i("MatchesFrag", "adapter size after: " + adapter.getItemCount());*/
+        Log.i("MatchesFrag", "adapter size after: " + adapter.getItemCount());
 
         return rootView;
     }
