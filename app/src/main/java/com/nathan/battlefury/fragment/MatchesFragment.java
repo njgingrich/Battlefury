@@ -3,9 +3,9 @@ package com.nathan.battlefury.fragment;
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.ListFragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -13,22 +13,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.TextView;
+import android.widget.Button;
+import android.widget.Toast;
 
 import com.nathan.battlefury.R;
 import com.nathan.battlefury.database.DBHelper;
-import com.nathan.battlefury.model.Constants;
-import com.nathan.battlefury.model.Match;
-import com.nathan.battlefury.model.MatchHistory;
-import com.nathan.battlefury.parse.RestClient;
+import com.nathan.battlefury.rest.BusProvider;
+import com.nathan.battlefury.rest.event.LoadMatchesEvent;
+import com.nathan.battlefury.rest.event.MatchesLoadedEvent;
 import com.nathan.battlefury.view.MatchRVAdapter;
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
-
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import java.util.ListIterator;
 
 /**
  * Activities that contain this fragment must implement the
@@ -44,7 +45,10 @@ public class MatchesFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
     public static final String TAG = "matches_fragment";
 
+    private MatchRVAdapter adapter;
     private DBHelper datasource;
+    private Button button;
+    private Bus bus;
 
     private OnFragmentInteractionListener mListener;
 
@@ -73,76 +77,42 @@ public class MatchesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        /*
-        for (Long match_id : match_ids) {
-            RestClient.get().getMatch(Constants.STEAM_KEY, match_id, new Callback<Match>() {
-                @Override
-                public void success(Match match, Response response) {
-                    // success!
-                    Log.i("Battlefury", "Match added " + match._id);
-                    datasource.insertMatch(match);
-                }
 
-                @Override
-                public void failure(RetrofitError error) {
-                    error.printStackTrace();
-                }
-            });
-        }
-        List<Match> matches = datasource.getAllMatches();
-        Log.i("MatchesFrag", "added to list: " + matches.size());
-        ArrayAdapter<Match> adapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_list_item_1, matches);
-                setListAdapter(adapter);
-        setListAdapter(adapter);*/
     }
-
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        datasource = new DBHelper(getActivity().getApplicationContext());
         View rootView = inflater.inflate(R.layout.fragment_matches, container, false);
+        button = (Button) rootView.findViewById(R.id.button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getActivity(), "loading matches",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
 
         RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.match_frag_rv);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        final MatchRVAdapter adapter = new MatchRVAdapter();
+        adapter = new MatchRVAdapter();
         recyclerView.setAdapter(adapter);
-        LinkedList<Long> match_list = new LinkedList<>();
-        match_list.add(100L);
-        match_list.add(200L);
-        adapter.addAll(match_list);
-
-        //TODO: This is a shit way of doing it (its just to get it to work)
-        //TODO: replace with checking for more matches from user + load old from DB
-        // Get all of the user's match IDs
-        RestClient.get().getMatchHistory(Constants.STEAM_KEY, 0L, new Callback<MatchHistory>() {
-            @Override
-            public void success(MatchHistory matchHistory, Response response) {
-                Log.i("GetMatchHistory", "Successfully found " + matchHistory.total_matches + " matches for player");
-                Log.i("GetMatchHistory", "matches size: " + matchHistory.matches.size());
-                adapter.addAll(matchHistory.matches);
-                Log.i("MatchesFrag", "adapter size: " + adapter.getItemCount());
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-
-            }
-        });
-        Log.i("MatchesFrag", "adapter size after: " + adapter.getItemCount());
 
         return rootView;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        Bus b = BusProvider.getInstance();
+        b.register(this);
+        b.post(new LoadMatchesEvent());
+        Log.i("Otto", "posted loadMatchesEvent");
+        Toast.makeText(getActivity(), "posted LoadMatchesEvent",
+                Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -167,6 +137,34 @@ public class MatchesFragment extends Fragment {
         super.onDetach();
         mListener = null;
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        BusProvider.getInstance().unregister(this);
+    }
+
+    @Subscribe
+    public void onMatchesLoaded(MatchesLoadedEvent event) {
+        adapter.addAll(event.get().matches);
+
+        Log.i("Otto", "found + loaded matches (size " + adapter.getItemCount() + ")");
+        Toast.makeText(getActivity(), "loaded matches",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    private Bus getBus() {
+        if (bus == null) {
+            bus = BusProvider.getInstance();
+        }
+        return bus;
+    }
+
+    private void setBus(Bus bus) {
+        this.bus = bus;
+    }
+
+
 
     /**
      * This interface must be implemented by activities that contain this

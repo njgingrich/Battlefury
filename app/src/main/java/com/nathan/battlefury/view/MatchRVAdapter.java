@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.nathan.battlefury.R;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class MatchRVAdapter extends RecyclerView.Adapter<MatchRVAdapter.MatchVie
     }
 
     public void addAll(List<Long> ids) {
-        match_ids = ids;
+        match_ids.addAll(ids);
     }
 
     @Override
